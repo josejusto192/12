@@ -146,16 +146,16 @@ CREATE OR REPLACE FUNCTION calculate_user_streak(p_user_id UUID)
 RETURNS INTEGER AS $$
 DECLARE
   streak_count INTEGER := 0;
-  current_date DATE := CURRENT_DATE;
+  check_date DATE := CURRENT_DATE;
 BEGIN
   LOOP
     IF EXISTS (
       SELECT 1 FROM completed_practices
       WHERE user_id = p_user_id
-      AND date = current_date
+      AND date = check_date
     ) THEN
       streak_count := streak_count + 1;
-      current_date := current_date - 1;
+      check_date := check_date - 1;
     ELSE
       EXIT;
     END IF;
