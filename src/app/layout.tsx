@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   description: 'Sua jornada de autocuidado começa aqui. Práticas simples e transformadoras para mulheres que merecem se priorizar.',
   keywords: ['autocuidado', 'wellness', 'saúde mental', 'mindfulness', 'mães', 'mulheres'],
   authors: [{ name: 'Cuidar de Mim' }],
+  manifest: '/manifest.json',
 }
 
 export const viewport: Viewport = {
