@@ -1,13 +1,4 @@
 {
-  "git": {
-    "deploymentEnabled": {
-      "main": true,
-      "claude/explore-repo-contents-0176xyqfcZ5uAUtNSW5goFZM": true
-    }
-  },
   "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
   "framework": "nextjs"
 }
