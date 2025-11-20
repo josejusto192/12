@@ -14,11 +14,18 @@ export async function calculateDimensionProgress(
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-  // Total de práticas dessa dimensão
-  const { count: totalPractices } = await supabase
+  // Buscar IDs das práticas dessa dimensão
+  const { data: practicesData } = await supabase
     .from('practices')
-    .select('*', { count: 'exact', head: true })
+    .select('id')
     .eq('dimension', dimension)
+
+  if (!practicesData || practicesData.length === 0) return 0
+
+  const practiceIds = practicesData.map((p: { id: string }) => p.id)
+
+  // Total de práticas dessa dimensão
+  const totalPractices = practicesData.length
 
   // Práticas completadas pelo usuário (últimos 30 dias)
   const { count: completedPractices } = await supabase
@@ -26,12 +33,7 @@ export async function calculateDimensionProgress(
     .select('practice_id', { count: 'exact', head: true })
     .eq('user_id', userId)
     .gte('completed_at', thirtyDaysAgo.toISOString())
-    .in(
-      'practice_id',
-      supabase.from('practices').select('id').eq('dimension', dimension)
-    )
-
-  if (!totalPractices || totalPractices === 0) return 0
+    .in('practice_id', practiceIds)
 
   const percentage = Math.min(
     Math.round(((completedPractices || 0) / totalPractices) * 100),
@@ -58,7 +60,7 @@ export async function calculateUserStreak(userId: string): Promise<number> {
   if (!completedDates || completedDates.length === 0) return 0
 
   // Remover duplicatas
-  const uniqueDates = [...new Set(completedDates.map((d) => d.date))].sort(
+  const uniqueDates = [...new Set(completedDates.map((d: { date: string }) => d.date))].sort(
     (a, b) => new Date(b).getTime() - new Date(a).getTime()
   )
 
@@ -123,7 +125,7 @@ export async function recommendPractice(userId: string) {
     .order('percentage', { ascending: true })
 
   // Dimensão com menor progresso
-  const lowestDimension = dimensionProgress?.[0]?.dimension
+  const lowestDimension = (dimensionProgress as any)?.[0]?.dimension as string | undefined
 
   // Práticas já feitas hoje
   const today = new Date().toISOString().split('T')[0]
@@ -134,13 +136,13 @@ export async function recommendPractice(userId: string) {
     .eq('date', today)
 
   const todayCompletedIds =
-    todayCompleted?.map((c) => c.practice_id) || []
+    todayCompleted?.map((c: { practice_id: string }) => c.practice_id) || []
 
   // Buscar prática recomendada
   let query = supabase
     .from('practices')
     .select('*')
-    .lte('duration_minutes', profile.available_time || 10)
+    .lte('duration_minutes', (profile as any).available_time || 10)
     .order('duration_minutes', { ascending: true })
 
   if (lowestDimension) {
